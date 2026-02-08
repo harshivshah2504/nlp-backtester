@@ -1,0 +1,27 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+.env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Log files
+*.log
+
+# Data files
+*.h5
+*.db
+
+# System-specific files
+.DS_Store
+Thumbs.db
+
+# VS Code directory
+.vscode/

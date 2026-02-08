@@ -1,0 +1,44 @@
+# Core Dependencies for Backtest Crew & Backtester
+# =================================================
+
+# LLM Frameworks
+crewai
+openai~=1.83.0
+groq
+google-generativeai
+
+# Data & Analysis
+pandas
+numpy
+yfinance
+pyarrow
+numba
+scipy
+seaborn
+
+# Backtesting & Visualization
+backtesting
+bokeh
+matplotlib
+ta
+pandas-ta
+ipython
+
+# Web Dashboard
+streamlit
+
+# Utilities
+python-dotenv
+tqdm
+requests
+cloudpickle
+pydantic
+tabulate
+lxml
+pyyaml
+
+# Async & Scheduling
+apscheduler
+
+# Database
+pypika
