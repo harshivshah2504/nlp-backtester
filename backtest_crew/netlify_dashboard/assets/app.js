@@ -1,12 +1,8 @@
-const CONFIG_STORAGE_KEY = "backtest-crew-config";
 const DEFAULT_CONFIG = window.__BACKTEST_CONFIG__ || {};
 
 const elements = {
-  apiBaseUrl: document.getElementById("apiBaseUrl"),
-  apiPath: document.getElementById("apiPath"),
   query: document.getElementById("query"),
   runButton: document.getElementById("runButton"),
-  saveConfigButton: document.getElementById("saveConfigButton"),
   statusBanner: document.getElementById("statusBanner"),
   resultMeta: document.getElementById("resultMeta"),
   summaryCards: document.getElementById("summaryCards"),
@@ -16,32 +12,16 @@ const elements = {
   outputBlock: document.getElementById("outputBlock"),
 };
 
-function readSavedConfig() {
-  try {
-    return JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY) || "{}");
-  } catch (_) {
-    return {};
-  }
-}
-
-function getConfig() {
-  const fallbackBaseUrl =
+function getRequestUrl() {
+  const baseUrl =
     DEFAULT_CONFIG.apiBaseUrl ||
     (window.location.protocol.startsWith("http") ? window.location.origin : "");
-
-  return {
-    apiBaseUrl: elements.apiBaseUrl.value.trim() || fallbackBaseUrl,
-    apiPath: elements.apiPath.value.trim() || "/api/backtest",
-  };
+  const apiPath = DEFAULT_CONFIG.apiPath || "/api/backtest";
+  return `${baseUrl.replace(/\/$/, "")}${apiPath.startsWith("/") ? apiPath : `/${apiPath}`}`;
 }
 
-function saveConfig() {
-  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(getConfig()));
-  setStatus("Endpoint saved in this browser.", "success");
-}
-
-function setStatus(message, tone = "info") {
-  elements.statusBanner.className = `status-banner ${tone}`;
+function setStatus(message, tone = "") {
+  elements.statusBanner.className = tone ? `status-banner ${tone}` : "status-banner";
   elements.statusBanner.textContent = message;
 }
 
@@ -56,24 +36,16 @@ function normalizeResult(payload) {
   if (payload && typeof payload === "object" && payload.result && typeof payload.result === "object") {
     return payload.result;
   }
-
   return payload;
 }
 
 function renderSummaryCards(result) {
   const summary = result?.stats_summary || result?.stats || {};
-  const entries = Object.entries(summary || {}).filter(([key, value]) => {
-    if (key === "_trades") {
-      return false;
-    }
-
-    const valueType = typeof value;
-    return valueType !== "object" || value === null;
-  });
+  const entries = Object.entries(summary || {}).filter(([key, value]) => key !== "_trades" && (typeof value !== "object" || value === null));
 
   if (!entries.length) {
     elements.summaryCards.className = "summary-grid empty-state";
-    elements.summaryCards.textContent = "Backtest summary metrics will appear here.";
+    elements.summaryCards.textContent = "No result.";
     return;
   }
 
@@ -101,7 +73,7 @@ function renderTradesTable(result) {
   const trades = result?.trades || result?.stats?._trades || [];
   if (!Array.isArray(trades) || !trades.length) {
     elements.tradesTable.className = "table-shell empty-state";
-    elements.tradesTable.textContent = "No trades to show.";
+    elements.tradesTable.textContent = "No trades.";
     return;
   }
 
@@ -115,21 +87,21 @@ function renderTradesTable(result) {
   const table = document.createElement("table");
   const thead = document.createElement("thead");
   const tbody = document.createElement("tbody");
-
   const headerRow = document.createElement("tr");
+
   columns.forEach((column) => {
     const th = document.createElement("th");
     th.textContent = column;
     headerRow.appendChild(th);
   });
+
   thead.appendChild(headerRow);
 
   trades.forEach((row) => {
     const tr = document.createElement("tr");
     columns.forEach((column) => {
       const td = document.createElement("td");
-      const value = row?.[column];
-      td.textContent = value == null ? "" : String(value);
+      td.textContent = row?.[column] == null ? "" : String(row[column]);
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -144,74 +116,51 @@ function renderFigure(result) {
   const figureHtml = result?.figure_html || result?.fig_html || "";
   const figureUrl = result?.figure_url || result?.fig_url || "";
 
-  if (figureHtml) {
+  if (figureHtml || figureUrl) {
     const iframe = document.createElement("iframe");
     iframe.loading = "lazy";
     iframe.referrerPolicy = "no-referrer";
-    iframe.srcdoc = figureHtml;
-    elements.figureContainer.className = "figure-shell";
-    elements.figureContainer.replaceChildren(iframe);
-    return;
-  }
-
-  if (figureUrl) {
-    const iframe = document.createElement("iframe");
-    iframe.loading = "lazy";
-    iframe.referrerPolicy = "no-referrer";
-    iframe.src = figureUrl;
+    if (figureHtml) {
+      iframe.srcdoc = figureHtml;
+    } else {
+      iframe.src = figureUrl;
+    }
     elements.figureContainer.className = "figure-shell";
     elements.figureContainer.replaceChildren(iframe);
     return;
   }
 
   elements.figureContainer.className = "figure-shell empty-state";
-  elements.figureContainer.textContent = "No visualization returned.";
+  elements.figureContainer.textContent = "No chart.";
 }
 
 function renderResult(result) {
   renderSummaryCards(result || {});
   renderTradesTable(result || {});
   renderFigure(result || {});
-  setTextCodeBlock(elements.codeBlock, result?.final_code || "", "No code generated yet.");
-  setTextCodeBlock(
-    elements.outputBlock,
-    result?.output || result?.error || "",
-    "No output yet."
-  );
+  setTextCodeBlock(elements.codeBlock, result?.final_code || "", "No code.");
+  setTextCodeBlock(elements.outputBlock, result?.output || result?.error || "", "No output.");
 
-  const attempts = result?.attempts_taken ? `Attempts: ${result.attempts_taken}` : "Attempts: n/a";
   const status = result?.status || "unknown";
-  elements.resultMeta.textContent = `Status: ${status} | ${attempts}`;
+  const attempts = result?.attempts_taken ? `attempts ${result.attempts_taken}` : "attempts n/a";
+  elements.resultMeta.textContent = `${status} | ${attempts}`;
 }
 
 async function runBacktest() {
   const query = elements.query.value.trim();
-  const config = getConfig();
-
-  if (!config.apiBaseUrl) {
-    setStatus("Enter the API base URL first.", "error");
-    return;
-  }
-
   if (!query) {
-    setStatus("Enter a strategy idea before running the backtest.", "error");
+    setStatus("Enter a query.", "error");
     return;
   }
-
-  const baseUrl = config.apiBaseUrl.replace(/\/$/, "");
-  const path = config.apiPath.startsWith("/") ? config.apiPath : `/${config.apiPath}`;
-  const requestUrl = `${baseUrl}${path}`;
 
   elements.runButton.disabled = true;
-  setStatus(`Running backtest via ${requestUrl}`, "info");
-  elements.resultMeta.textContent = "Request in progress...";
+  elements.resultMeta.textContent = "running...";
+  setStatus("Running...");
 
   try {
-    const response = await fetch(requestUrl, {
+    const response = await fetch(getRequestUrl(), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query }),
     });
 
@@ -226,24 +175,19 @@ async function runBacktest() {
     }
 
     renderResult(result || {});
-    setStatus("Backtest completed.", result?.status === "failed" ? "error" : "success");
+    setStatus("Done.", result?.status === "failed" ? "error" : "success");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     renderResult({ status: "failed", error: message });
-    setStatus(`Request failed: ${message}`, "error");
+    setStatus(message, "error");
   } finally {
     elements.runButton.disabled = false;
   }
 }
 
 function bootstrap() {
-  const saved = readSavedConfig();
-  elements.apiBaseUrl.value = saved.apiBaseUrl || DEFAULT_CONFIG.apiBaseUrl || "";
-  elements.apiPath.value = saved.apiPath || DEFAULT_CONFIG.apiPath || "/api/backtest";
   elements.query.value = DEFAULT_CONFIG.exampleQuery || "";
-
   elements.runButton.addEventListener("click", runBacktest);
-  elements.saveConfigButton.addEventListener("click", saveConfig);
 }
 
 bootstrap();

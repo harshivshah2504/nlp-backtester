@@ -51,128 +51,45 @@ INDEX_HTML = """<!DOCTYPE html>
     <link rel="stylesheet" href="./assets/styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <header class="hero">
-        <p class="eyebrow">Netlify-ready frontend</p>
-        <div class="hero-copy">
-          <h1>Backtest Crew Console</h1>
-          <p>
-            Static UI for generating trading strategies from natural language.
-            Host this on Netlify and point it at a separate HTTP API that runs
-            the Python crew.
-          </p>
+    <main class="app-shell">
+      <section class="input-panel">
+        <textarea
+          id="query"
+          rows="8"
+          placeholder="Enter your trading strategy idea..."
+        ></textarea>
+        <button id="runButton" type="button">Run</button>
+        <div id="statusBanner" class="status-banner">Ready.</div>
+      </section>
+
+      <section class="output-grid">
+        <div class="output-box">
+          <div class="output-title">Summary</div>
+          <div id="resultMeta" class="meta-text">No run yet.</div>
+          <div id="summaryCards" class="summary-grid empty-state">No result.</div>
         </div>
-        <div class="hero-card">
-          <span class="hero-card-label">Runtime model</span>
-          <strong>Static app + remote API</strong>
-          <p>
-            The deployed site is browser-only. The backtest engine stays on a
-            Python host and returns JSON.
-          </p>
+
+        <div class="output-box">
+          <div class="output-title">Trades</div>
+          <div id="tradesTable" class="table-shell empty-state">No trades.</div>
         </div>
-      </header>
 
-      <main class="layout">
-        <section class="panel panel-form">
-          <div class="panel-header">
-            <h2>Run Strategy Generator</h2>
-            <p>Submit a trading idea and render the backtest response.</p>
-          </div>
+        <div class="output-box">
+          <div class="output-title">Chart</div>
+          <div id="figureContainer" class="figure-shell empty-state">No chart.</div>
+        </div>
 
-          <label class="field">
-            <span>Backtest API base URL</span>
-            <input
-              id="apiBaseUrl"
-              type="url"
-              placeholder="https://your-backend.example.com"
-              spellcheck="false"
-            />
-          </label>
+        <div class="output-box">
+          <div class="output-title">Code</div>
+          <pre id="codeBlock" class="code-shell empty-state"><code>No code.</code></pre>
+        </div>
 
-          <label class="field">
-            <span>Endpoint path</span>
-            <input
-              id="apiPath"
-              type="text"
-              placeholder="/api/backtest"
-              value="/api/backtest"
-              spellcheck="false"
-            />
-          </label>
-
-          <label class="field">
-            <span>Trading strategy idea</span>
-            <textarea
-              id="query"
-              rows="10"
-              placeholder="Build a long-short technical strategy for MSFT from 2024-01-01 with ATR-based stops and adaptive risk sizing."
-            ></textarea>
-          </label>
-
-          <div class="actions">
-            <button id="runButton" class="primary-button">Run Backtest</button>
-            <button id="saveConfigButton" class="secondary-button" type="button">
-              Save Endpoint
-            </button>
-          </div>
-
-          <div id="statusBanner" class="status-banner info">
-            Configure the API endpoint, then run a strategy.
-          </div>
-        </section>
-
-        <aside class="panel panel-side">
-          <div class="panel-header">
-            <h2>Expected API</h2>
-            <p>POST JSON payload with a single <code>query</code> field.</p>
-          </div>
-          <pre class="api-contract"><code>{
-  "query": "Build a momentum strategy for NVDA..."
-}</code></pre>
-          <p class="panel-note">
-            The response can either be the raw result object or
-            <code>{ "result": ... }</code>. If you use the serializer in
-            <code>backtest_crew/dashboard.py</code>, the frontend already knows
-            how to render it.
-          </p>
-        </aside>
-
-        <section class="panel panel-results">
-          <div class="panel-header">
-            <h2>Result</h2>
-            <p id="resultMeta">No run yet.</p>
-          </div>
-
-          <div id="summaryCards" class="summary-grid empty-state">
-            Backtest summary metrics will appear here.
-          </div>
-
-          <div class="result-block">
-            <h3>Trades</h3>
-            <div id="tradesTable" class="table-shell empty-state">
-              No trades to show.
-            </div>
-          </div>
-
-          <div class="result-block">
-            <h3>Equity Curve</h3>
-            <div id="figureContainer" class="figure-shell empty-state">
-              No visualization returned.
-            </div>
-          </div>
-
-          <div class="result-block">
-            <h3>Generated Strategy Code</h3>
-            <pre id="codeBlock" class="code-shell empty-state"><code>No code generated yet.</code></pre>
-          </div>
-
-          <div class="result-block">
-            <h3>Raw Output</h3>
-            <pre id="outputBlock" class="code-shell empty-state"><code>No output yet.</code></pre>
-          </div>
-        </section>
-      </main>
-    </div>
+        <div class="output-box">
+          <div class="output-title">Output</div>
+          <pre id="outputBlock" class="code-shell empty-state"><code>No output.</code></pre>
+        </div>
+      </section>
+    </main>
 
     <script src="./config.js"></script>
     <script src="./assets/app.js"></script>
@@ -182,24 +99,15 @@ INDEX_HTML = """<!DOCTYPE html>
 
 
 STYLES_CSS = """:root {
-  --bg: #f4efe4;
-  --bg-accent: radial-gradient(circle at top left, rgba(194, 120, 64, 0.18), transparent 34%),
-    radial-gradient(circle at top right, rgba(9, 71, 86, 0.18), transparent 30%),
-    linear-gradient(180deg, #f7f2e8 0%, #efe5d4 100%);
-  --panel: rgba(255, 250, 240, 0.78);
-  --panel-border: rgba(15, 45, 52, 0.14);
-  --ink: #172628;
-  --muted: #55686d;
-  --accent: #0d596a;
-  --accent-strong: #093f4a;
-  --accent-warm: #ba6a33;
+  --bg: #f7f7f4;
+  --panel: #ffffff;
+  --border: #d7d9d2;
+  --ink: #171717;
+  --muted: #676b63;
+  --accent: #111111;
   --success: #1f7a4d;
   --error: #a33d2b;
-  --info: #325c84;
-  --shadow: 0 18px 48px rgba(30, 41, 59, 0.12);
-  --radius-lg: 26px;
-  --radius-md: 18px;
-  --radius-sm: 12px;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 * {
@@ -209,329 +117,176 @@ STYLES_CSS = """:root {
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Space Grotesk", sans-serif;
+  background: var(--bg);
   color: var(--ink);
-  background: var(--bg-accent);
+  font-family: "Space Grotesk", sans-serif;
 }
 
-code,
+textarea,
 pre,
-input,
-textarea {
+code,
+button {
   font-family: "IBM Plex Mono", monospace;
 }
 
-.page-shell {
-  width: min(1240px, calc(100vw - 32px));
-  margin: 0 auto;
-  padding: 32px 0 48px;
+.app-shell {
+  width: min(1100px, calc(100vw - 24px));
+  margin: 24px auto;
 }
 
-.hero {
-  display: grid;
-  grid-template-columns: 1.7fr 0.9fr;
-  gap: 20px;
-  align-items: stretch;
-  margin-bottom: 22px;
-}
-
-.hero-copy,
-.hero-card,
-.panel {
-  backdrop-filter: blur(16px);
+.input-panel,
+.output-box {
   background: var(--panel);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   box-shadow: var(--shadow);
 }
 
-.hero-copy {
-  padding: 30px;
-  position: relative;
-  overflow: hidden;
+.input-panel {
+  padding: 16px;
 }
 
-.hero-copy::after {
-  content: "";
-  position: absolute;
-  right: -40px;
-  bottom: -60px;
-  width: 180px;
-  height: 180px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(13, 89, 106, 0.14), rgba(186, 106, 51, 0.22));
-}
-
-.eyebrow {
-  margin: 0 0 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.78rem;
-  color: var(--accent);
-}
-
-.hero h1,
-.panel h2,
-.result-block h3 {
-  margin: 0;
-}
-
-.hero h1 {
-  font-size: clamp(2.2rem, 4vw, 4.5rem);
-  line-height: 0.95;
-  max-width: 12ch;
-}
-
-.hero-copy p,
-.hero-card p,
-.panel-header p,
-.panel-note,
-.status-banner {
-  color: var(--muted);
-}
-
-.hero-copy p {
-  max-width: 62ch;
-  margin: 16px 0 0;
-  line-height: 1.6;
-}
-
-.hero-card {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 10px;
-}
-
-.hero-card-label {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--accent-warm);
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 1.05fr 0.7fr;
-  gap: 20px;
-}
-
-.panel {
-  padding: 24px;
-}
-
-.panel-results {
-  grid-column: 1 / -1;
-}
-
-.panel-header {
-  margin-bottom: 18px;
-}
-
-.panel-header p {
-  margin: 8px 0 0;
-  line-height: 1.5;
-}
-
-.field {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.field span {
-  font-size: 0.92rem;
-  font-weight: 700;
-}
-
-input,
 textarea {
   width: 100%;
-  border: 1px solid rgba(9, 63, 74, 0.18);
-  background: rgba(255, 255, 255, 0.72);
+  min-height: 180px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fcfcfa;
   color: var(--ink);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
   font-size: 0.95rem;
-  transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
 }
 
-input:focus,
 textarea:focus {
   outline: none;
-  border-color: rgba(13, 89, 106, 0.52);
-  background: rgba(255, 255, 255, 0.94);
-  transform: translateY(-1px);
-}
-
-textarea {
-  resize: vertical;
-  min-height: 220px;
-}
-
-.actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  border-color: #999d93;
 }
 
 button {
+  margin-top: 12px;
   border: none;
-  border-radius: 999px;
-  padding: 13px 18px;
-  font: inherit;
-  font-weight: 700;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
-}
-
-button:hover {
-  transform: translateY(-1px);
 }
 
 button:disabled {
+  opacity: 0.7;
   cursor: wait;
-  opacity: 0.72;
-}
-
-.primary-button {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: #fff8ef;
-  box-shadow: 0 12px 24px rgba(9, 63, 74, 0.18);
-}
-
-.secondary-button {
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--accent-strong);
-  border: 1px solid rgba(9, 63, 74, 0.14);
-}
-
-.status-banner,
-.api-contract,
-.summary-card,
-.table-shell,
-.figure-shell,
-.code-shell {
-  border-radius: var(--radius-md);
 }
 
 .status-banner {
-  margin-top: 18px;
-  padding: 14px 16px;
-  border: 1px solid transparent;
-  background: rgba(50, 92, 132, 0.08);
-}
-
-.status-banner.info {
-  color: var(--info);
-  border-color: rgba(50, 92, 132, 0.16);
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .status-banner.success {
   color: var(--success);
-  border-color: rgba(31, 122, 77, 0.18);
-  background: rgba(31, 122, 77, 0.08);
 }
 
 .status-banner.error {
   color: var(--error);
-  border-color: rgba(163, 61, 43, 0.18);
-  background: rgba(163, 61, 43, 0.08);
 }
 
-.api-contract,
-.code-shell {
-  margin: 0;
-  padding: 16px;
-  overflow: auto;
-  background: #112126;
-  color: #eff8f0;
+.output-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 14px;
 }
 
-.panel-note {
-  margin-bottom: 0;
-  line-height: 1.6;
+.output-box {
+  padding: 14px;
+}
+
+.output-title {
+  margin-bottom: 10px;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.meta-text {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
-  margin-bottom: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
 }
 
 .summary-card {
-  min-height: 118px;
-  padding: 16px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 239, 228, 0.88));
-  border: 1px solid rgba(9, 63, 74, 0.1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: #fcfcfa;
 }
 
 .summary-card-label {
   display: block;
-  margin-bottom: 10px;
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  margin-bottom: 6px;
   color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
 }
 
 .summary-card-value {
   display: block;
-  font-size: 1.35rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  line-height: 1.2;
-}
-
-.result-block + .result-block {
-  margin-top: 18px;
-}
-
-.result-block h3 {
-  margin-bottom: 10px;
 }
 
 .table-shell,
-.figure-shell {
-  min-height: 160px;
+.figure-shell,
+.code-shell {
+  min-height: 96px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fcfcfa;
   overflow: auto;
-  background: rgba(255, 255, 255, 0.66);
-  border: 1px solid rgba(9, 63, 74, 0.1);
-  padding: 12px;
+}
+
+.table-shell {
+  padding: 10px;
 }
 
 .table-shell table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
 }
 
 .table-shell th,
 .table-shell td {
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-align: left;
-  border-bottom: 1px solid rgba(9, 63, 74, 0.08);
+  border-bottom: 1px solid #eceee8;
   white-space: nowrap;
 }
 
 .table-shell th {
+  background: #f2f4ee;
   position: sticky;
   top: 0;
-  background: #f2e8d9;
 }
 
 .figure-shell iframe {
   width: 100%;
-  min-height: 620px;
+  min-height: 520px;
   border: none;
-  border-radius: 10px;
-  background: white;
 }
 
 .code-shell {
-  min-height: 160px;
-  line-height: 1.6;
+  margin: 0;
+  padding: 12px;
+  line-height: 1.5;
 }
 
 .empty-state {
@@ -539,50 +294,14 @@ button:disabled {
   place-items: center;
   color: var(--muted);
 }
-
-@media (max-width: 1024px) {
-  .hero,
-  .layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .page-shell {
-    width: min(100vw - 20px, 1240px);
-    padding-top: 18px;
-  }
-
-  .hero-copy,
-  .hero-card,
-  .panel {
-    border-radius: 20px;
-  }
-
-  .panel {
-    padding: 18px;
-  }
-
-  .actions {
-    flex-direction: column;
-  }
-
-  button {
-    width: 100%;
-  }
-}
 """
 
 
-APP_JS = """const CONFIG_STORAGE_KEY = "backtest-crew-config";
-const DEFAULT_CONFIG = window.__BACKTEST_CONFIG__ || {};
+APP_JS = """const DEFAULT_CONFIG = window.__BACKTEST_CONFIG__ || {};
 
 const elements = {
-  apiBaseUrl: document.getElementById("apiBaseUrl"),
-  apiPath: document.getElementById("apiPath"),
   query: document.getElementById("query"),
   runButton: document.getElementById("runButton"),
-  saveConfigButton: document.getElementById("saveConfigButton"),
   statusBanner: document.getElementById("statusBanner"),
   resultMeta: document.getElementById("resultMeta"),
   summaryCards: document.getElementById("summaryCards"),
@@ -592,32 +311,16 @@ const elements = {
   outputBlock: document.getElementById("outputBlock"),
 };
 
-function readSavedConfig() {
-  try {
-    return JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY) || "{}");
-  } catch (_) {
-    return {};
-  }
-}
-
-function getConfig() {
-  const fallbackBaseUrl =
+function getRequestUrl() {
+  const baseUrl =
     DEFAULT_CONFIG.apiBaseUrl ||
     (window.location.protocol.startsWith("http") ? window.location.origin : "");
-
-  return {
-    apiBaseUrl: elements.apiBaseUrl.value.trim() || fallbackBaseUrl,
-    apiPath: elements.apiPath.value.trim() || "/api/backtest",
-  };
+  const apiPath = DEFAULT_CONFIG.apiPath || "/api/backtest";
+  return `${baseUrl.replace(/\\/$/, "")}${apiPath.startsWith("/") ? apiPath : `/${apiPath}`}`;
 }
 
-function saveConfig() {
-  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(getConfig()));
-  setStatus("Endpoint saved in this browser.", "success");
-}
-
-function setStatus(message, tone = "info") {
-  elements.statusBanner.className = `status-banner ${tone}`;
+function setStatus(message, tone = "") {
+  elements.statusBanner.className = tone ? `status-banner ${tone}` : "status-banner";
   elements.statusBanner.textContent = message;
 }
 
@@ -632,24 +335,16 @@ function normalizeResult(payload) {
   if (payload && typeof payload === "object" && payload.result && typeof payload.result === "object") {
     return payload.result;
   }
-
   return payload;
 }
 
 function renderSummaryCards(result) {
   const summary = result?.stats_summary || result?.stats || {};
-  const entries = Object.entries(summary || {}).filter(([key, value]) => {
-    if (key === "_trades") {
-      return false;
-    }
-
-    const valueType = typeof value;
-    return valueType !== "object" || value === null;
-  });
+  const entries = Object.entries(summary || {}).filter(([key, value]) => key !== "_trades" && (typeof value !== "object" || value === null));
 
   if (!entries.length) {
     elements.summaryCards.className = "summary-grid empty-state";
-    elements.summaryCards.textContent = "Backtest summary metrics will appear here.";
+    elements.summaryCards.textContent = "No result.";
     return;
   }
 
@@ -677,7 +372,7 @@ function renderTradesTable(result) {
   const trades = result?.trades || result?.stats?._trades || [];
   if (!Array.isArray(trades) || !trades.length) {
     elements.tradesTable.className = "table-shell empty-state";
-    elements.tradesTable.textContent = "No trades to show.";
+    elements.tradesTable.textContent = "No trades.";
     return;
   }
 
@@ -691,21 +386,21 @@ function renderTradesTable(result) {
   const table = document.createElement("table");
   const thead = document.createElement("thead");
   const tbody = document.createElement("tbody");
-
   const headerRow = document.createElement("tr");
+
   columns.forEach((column) => {
     const th = document.createElement("th");
     th.textContent = column;
     headerRow.appendChild(th);
   });
+
   thead.appendChild(headerRow);
 
   trades.forEach((row) => {
     const tr = document.createElement("tr");
     columns.forEach((column) => {
       const td = document.createElement("td");
-      const value = row?.[column];
-      td.textContent = value == null ? "" : String(value);
+      td.textContent = row?.[column] == null ? "" : String(row[column]);
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -720,74 +415,51 @@ function renderFigure(result) {
   const figureHtml = result?.figure_html || result?.fig_html || "";
   const figureUrl = result?.figure_url || result?.fig_url || "";
 
-  if (figureHtml) {
+  if (figureHtml || figureUrl) {
     const iframe = document.createElement("iframe");
     iframe.loading = "lazy";
     iframe.referrerPolicy = "no-referrer";
-    iframe.srcdoc = figureHtml;
-    elements.figureContainer.className = "figure-shell";
-    elements.figureContainer.replaceChildren(iframe);
-    return;
-  }
-
-  if (figureUrl) {
-    const iframe = document.createElement("iframe");
-    iframe.loading = "lazy";
-    iframe.referrerPolicy = "no-referrer";
-    iframe.src = figureUrl;
+    if (figureHtml) {
+      iframe.srcdoc = figureHtml;
+    } else {
+      iframe.src = figureUrl;
+    }
     elements.figureContainer.className = "figure-shell";
     elements.figureContainer.replaceChildren(iframe);
     return;
   }
 
   elements.figureContainer.className = "figure-shell empty-state";
-  elements.figureContainer.textContent = "No visualization returned.";
+  elements.figureContainer.textContent = "No chart.";
 }
 
 function renderResult(result) {
   renderSummaryCards(result || {});
   renderTradesTable(result || {});
   renderFigure(result || {});
-  setTextCodeBlock(elements.codeBlock, result?.final_code || "", "No code generated yet.");
-  setTextCodeBlock(
-    elements.outputBlock,
-    result?.output || result?.error || "",
-    "No output yet."
-  );
+  setTextCodeBlock(elements.codeBlock, result?.final_code || "", "No code.");
+  setTextCodeBlock(elements.outputBlock, result?.output || result?.error || "", "No output.");
 
-  const attempts = result?.attempts_taken ? `Attempts: ${result.attempts_taken}` : "Attempts: n/a";
   const status = result?.status || "unknown";
-  elements.resultMeta.textContent = `Status: ${status} | ${attempts}`;
+  const attempts = result?.attempts_taken ? `attempts ${result.attempts_taken}` : "attempts n/a";
+  elements.resultMeta.textContent = `${status} | ${attempts}`;
 }
 
 async function runBacktest() {
   const query = elements.query.value.trim();
-  const config = getConfig();
-
-  if (!config.apiBaseUrl) {
-    setStatus("Enter the API base URL first.", "error");
-    return;
-  }
-
   if (!query) {
-    setStatus("Enter a strategy idea before running the backtest.", "error");
+    setStatus("Enter a query.", "error");
     return;
   }
-
-  const baseUrl = config.apiBaseUrl.replace(/\\/$/, "");
-  const path = config.apiPath.startsWith("/") ? config.apiPath : `/${config.apiPath}`;
-  const requestUrl = `${baseUrl}${path}`;
 
   elements.runButton.disabled = true;
-  setStatus(`Running backtest via ${requestUrl}`, "info");
-  elements.resultMeta.textContent = "Request in progress...";
+  elements.resultMeta.textContent = "running...";
+  setStatus("Running...");
 
   try {
-    const response = await fetch(requestUrl, {
+    const response = await fetch(getRequestUrl(), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query }),
     });
 
@@ -802,24 +474,19 @@ async function runBacktest() {
     }
 
     renderResult(result || {});
-    setStatus("Backtest completed.", result?.status === "failed" ? "error" : "success");
+    setStatus("Done.", result?.status === "failed" ? "error" : "success");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     renderResult({ status: "failed", error: message });
-    setStatus(`Request failed: ${message}`, "error");
+    setStatus(message, "error");
   } finally {
     elements.runButton.disabled = false;
   }
 }
 
 function bootstrap() {
-  const saved = readSavedConfig();
-  elements.apiBaseUrl.value = saved.apiBaseUrl || DEFAULT_CONFIG.apiBaseUrl || "";
-  elements.apiPath.value = saved.apiPath || DEFAULT_CONFIG.apiPath || "/api/backtest";
   elements.query.value = DEFAULT_CONFIG.exampleQuery || "";
-
   elements.runButton.addEventListener("click", runBacktest);
-  elements.saveConfigButton.addEventListener("click", saveConfig);
 }
 
 bootstrap();
