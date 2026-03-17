@@ -21,7 +21,7 @@ backtesting
 bokeh
 matplotlib
 ta
-pandas-ta
+pandas-ta-classic
 ipython
 
 # Web Dashboard

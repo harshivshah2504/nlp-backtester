@@ -1,6 +1,7 @@
 # main_crew.py
 import os
 import sys
+from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -20,6 +21,9 @@ from dotenv import load_dotenv
 from llm_manager import get_crew_llm, TaskType, get_manager
 
 load_dotenv()
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+TEMPLATES_DIR = REPO_ROOT / "templates"
 
 
 # Develop an advanced long-short, purely technical algorithmic trading strategy for Microsoft (MSFT), starting from July 1st, 2022 to  dec 31st and apply macd crossover on it
@@ -43,11 +47,11 @@ llm_fallback = LLM(
 code_verifier_tool = CodeExecutionTool()
 
 def load_template(filepath):
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding="utf-8") as f:
         return f.read()
 
-risk_template = load_template('/home/harshiv27/Desktop/QuantX/templates/risk_management.py')
-trade_template = load_template('/home/harshiv27/Desktop/QuantX/templates/trade_management.py')
+risk_template = load_template(TEMPLATES_DIR / 'risk_management.py')
+trade_template = load_template(TEMPLATES_DIR / 'trade_management.py')
 
 
 # Agents with task-specific LLMs

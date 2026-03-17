@@ -6,6 +6,8 @@ import os
 import re
 import pickle
 import time
+import tempfile
+from pathlib import Path
 
 # Import the multi-model LLM manager
 from llm_manager import generate_with_fallback, TaskType, get_manager
@@ -30,14 +32,14 @@ def checker(python_code, ticker, start_date, end_date=None, MAX_RETRIES=10):
     # Get the LLM manager for tracking usage
     llm_manager = get_manager(verbose=True)
 
-    # Ensure temp directory exists
-    temp_dir = "/home/harshiv27/Desktop/QuantX/temp"
-    os.makedirs(temp_dir, exist_ok=True)
+    # Use a writable temp directory for local runs and hosted platforms like Render.
+    temp_dir = Path(tempfile.gettempdir()) / "backtest_crew"
+    temp_dir.mkdir(parents=True, exist_ok=True)
 
     # Unique filenames per run
     timestamp = int(time.time())
-    bt_file = os.path.join(temp_dir, f"temp_bt_{timestamp}.html")
-    stats_file = os.path.join(temp_dir, f"temp_stats_{timestamp}.pkl")
+    bt_file = str(temp_dir / f"temp_bt_{timestamp}.html")
+    stats_file = str(temp_dir / f"temp_stats_{timestamp}.pkl")
 
     # Format end_date for the main block (None becomes 'None' string for Python code)
     end_date_str = f'"{end_date}"' if end_date else 'None'

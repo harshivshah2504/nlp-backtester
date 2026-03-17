@@ -6,7 +6,10 @@ from typing import Callable, Dict, List, Optional, Sequence, Union, cast
 
 import numpy as np
 import pandas as pd
-from pandas_ta import AnalysisIndicators
+try:
+    from pandas_ta import AnalysisIndicators
+except ImportError:  # pragma: no cover - fallback for pandas-ta-classic deployments
+    from pandas_ta_classic import AnalysisIndicators
 
 
 def try_(lazy_func, default=None, exception=Exception):
