@@ -218,29 +218,36 @@ button:disabled {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 8px;
 }
 
-.summary-card {
+.summary-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
   background: #fcfcfa;
 }
 
-.summary-card-label {
-  display: block;
-  margin-bottom: 6px;
+.summary-label {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
+  line-height: 1.35;
 }
 
-.summary-card-value {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 700;
+.summary-value {
+  min-width: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .table-shell,
@@ -293,6 +300,13 @@ button:disabled {
   display: grid;
   place-items: center;
   color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .summary-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 """
 
@@ -351,19 +365,19 @@ function renderSummaryCards(result) {
   elements.summaryCards.className = "summary-grid";
   elements.summaryCards.replaceChildren(
     ...entries.map(([key, value]) => {
-      const card = document.createElement("article");
-      card.className = "summary-card";
+      const row = document.createElement("article");
+      row.className = "summary-row";
 
       const label = document.createElement("span");
-      label.className = "summary-card-label";
+      label.className = "summary-label";
       label.textContent = key.replaceAll("_", " ");
 
-      const metric = document.createElement("strong");
-      metric.className = "summary-card-value";
+      const metric = document.createElement("span");
+      metric.className = "summary-value";
       metric.textContent = String(value);
 
-      card.append(label, metric);
-      return card;
+      row.append(label, metric);
+      return row;
     })
   );
 }

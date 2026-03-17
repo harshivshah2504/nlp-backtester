@@ -52,19 +52,19 @@ function renderSummaryCards(result) {
   elements.summaryCards.className = "summary-grid";
   elements.summaryCards.replaceChildren(
     ...entries.map(([key, value]) => {
-      const card = document.createElement("article");
-      card.className = "summary-card";
+      const row = document.createElement("article");
+      row.className = "summary-row";
 
       const label = document.createElement("span");
-      label.className = "summary-card-label";
+      label.className = "summary-label";
       label.textContent = key.replaceAll("_", " ");
 
-      const metric = document.createElement("strong");
-      metric.className = "summary-card-value";
+      const metric = document.createElement("span");
+      metric.className = "summary-value";
       metric.textContent = String(value);
 
-      card.append(label, metric);
-      return card;
+      row.append(label, metric);
+      return row;
     })
   );
 }
