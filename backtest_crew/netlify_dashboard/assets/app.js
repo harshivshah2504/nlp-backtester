@@ -25,8 +25,12 @@ function readSavedConfig() {
 }
 
 function getConfig() {
+  const fallbackBaseUrl =
+    DEFAULT_CONFIG.apiBaseUrl ||
+    (window.location.protocol.startsWith("http") ? window.location.origin : "");
+
   return {
-    apiBaseUrl: elements.apiBaseUrl.value.trim(),
+    apiBaseUrl: elements.apiBaseUrl.value.trim() || fallbackBaseUrl,
     apiPath: elements.apiPath.value.trim() || "/api/backtest",
   };
 }
