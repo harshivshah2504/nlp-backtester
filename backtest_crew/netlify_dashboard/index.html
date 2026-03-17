@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Backtest Crew</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Netlify-ready frontend</p>
+        <div class="hero-copy">
+          <h1>Backtest Crew Console</h1>
+          <p>
+            Static UI for generating trading strategies from natural language.
+            Host this on Netlify and point it at a separate HTTP API that runs
+            the Python crew.
+          </p>
+        </div>
+        <div class="hero-card">
+          <span class="hero-card-label">Runtime model</span>
+          <strong>Static app + remote API</strong>
+          <p>
+            The deployed site is browser-only. The backtest engine stays on a
+            Python host and returns JSON.
+          </p>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel-form">
+          <div class="panel-header">
+            <h2>Run Strategy Generator</h2>
+            <p>Submit a trading idea and render the backtest response.</p>
+          </div>
+
+          <label class="field">
+            <span>Backtest API base URL</span>
+            <input
+              id="apiBaseUrl"
+              type="url"
+              placeholder="https://your-backend.example.com"
+              spellcheck="false"
+            />
+          </label>
+
+          <label class="field">
+            <span>Endpoint path</span>
+            <input
+              id="apiPath"
+              type="text"
+              placeholder="/api/backtest"
+              value="/api/backtest"
+              spellcheck="false"
+            />
+          </label>
+
+          <label class="field">
+            <span>Trading strategy idea</span>
+            <textarea
+              id="query"
+              rows="10"
+              placeholder="Build a long-short technical strategy for MSFT from 2024-01-01 with ATR-based stops and adaptive risk sizing."
+            ></textarea>
+          </label>
+
+          <div class="actions">
+            <button id="runButton" class="primary-button">Run Backtest</button>
+            <button id="saveConfigButton" class="secondary-button" type="button">
+              Save Endpoint
+            </button>
+          </div>
+
+          <div id="statusBanner" class="status-banner info">
+            Configure the API endpoint, then run a strategy.
+          </div>
+        </section>
+
+        <aside class="panel panel-side">
+          <div class="panel-header">
+            <h2>Expected API</h2>
+            <p>POST JSON payload with a single <code>query</code> field.</p>
+          </div>
+          <pre class="api-contract"><code>{
+  "query": "Build a momentum strategy for NVDA..."
+}</code></pre>
+          <p class="panel-note">
+            The response can either be the raw result object or
+            <code>{ "result": ... }</code>. If you use the serializer in
+            <code>backtest_crew/dashboard.py</code>, the frontend already knows
+            how to render it.
+          </p>
+        </aside>
+
+        <section class="panel panel-results">
+          <div class="panel-header">
+            <h2>Result</h2>
+            <p id="resultMeta">No run yet.</p>
+          </div>
+
+          <div id="summaryCards" class="summary-grid empty-state">
+            Backtest summary metrics will appear here.
+          </div>
+
+          <div class="result-block">
+            <h3>Trades</h3>
+            <div id="tradesTable" class="table-shell empty-state">
+              No trades to show.
+            </div>
+          </div>
+
+          <div class="result-block">
+            <h3>Equity Curve</h3>
+            <div id="figureContainer" class="figure-shell empty-state">
+              No visualization returned.
+            </div>
+          </div>
+
+          <div class="result-block">
+            <h3>Generated Strategy Code</h3>
+            <pre id="codeBlock" class="code-shell empty-state"><code>No code generated yet.</code></pre>
+          </div>
+
+          <div class="result-block">
+            <h3>Raw Output</h3>
+            <pre id="outputBlock" class="code-shell empty-state"><code>No output yet.</code></pre>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./config.js"></script>
+    <script src="./assets/app.js"></script>
+  </body>
+</html>
