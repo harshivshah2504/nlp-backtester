@@ -42,6 +42,7 @@ INDEX_HTML = """<!DOCTYPE html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Backtest Crew</title>
+    <meta name="description" content="AI-powered backtesting strategy generator. Describe a trading strategy in plain English and get executable backtest code with results." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -58,7 +59,10 @@ INDEX_HTML = """<!DOCTYPE html>
           rows="8"
           placeholder="Enter your trading strategy idea..."
         ></textarea>
-        <button id="runButton" type="button">Run</button>
+        <div class="input-actions">
+          <button id="runButton" type="button">Run</button>
+          <button id="exportCsvButton" type="button" class="btn-secondary" disabled>&#x2913; Export CSV</button>
+        </div>
         <div id="statusBanner" class="status-banner">Ready.</div>
       </section>
 
@@ -70,7 +74,18 @@ INDEX_HTML = """<!DOCTYPE html>
         </div>
 
         <div class="output-box">
-          <div class="output-title">Trades</div>
+          <div class="output-title-row">
+            <div class="output-title">Strategy Interpretation</div>
+            <span class="panel-badge">AI Explainability</span>
+          </div>
+          <div id="strategyInterpretation" class="interpretation-panel empty-state">No interpretation yet.</div>
+        </div>
+
+        <div class="output-box">
+          <div class="output-title-row">
+            <div class="output-title">Trades</div>
+            <button id="exportTradesCsvButton" type="button" class="btn-small" disabled>&#x2913; CSV</button>
+          </div>
           <div id="tradesTable" class="table-shell empty-state">No trades.</div>
         </div>
 
@@ -80,8 +95,10 @@ INDEX_HTML = """<!DOCTYPE html>
         </div>
 
         <div class="output-box">
-          <div class="output-title">Code</div>
-          <pre id="codeBlock" class="code-shell empty-state"><code>No code.</code></pre>
+          <details id="codeDetails" class="code-details">
+            <summary class="code-summary">View Code</summary>
+            <pre id="codeBlock" class="code-shell empty-state"><code>No code.</code></pre>
+          </details>
         </div>
 
         <div class="output-box">
@@ -108,6 +125,9 @@ STYLES_CSS = """:root {
   --success: #1f7a4d;
   --error: #a33d2b;
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --interpret-bg: #f0f4ff;
+  --interpret-border: #c7d2fe;
+  --interpret-label: #4338ca;
 }
 
 * {
@@ -146,6 +166,12 @@ button {
   padding: 16px;
 }
 
+.input-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 textarea {
   width: 100%;
   min-height: 180px;
@@ -172,11 +198,47 @@ button {
   color: #ffffff;
   font-size: 0.95rem;
   cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 button:disabled {
-  opacity: 0.7;
-  cursor: wait;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(17, 17, 17, 0.04);
+}
+
+.btn-small {
+  margin-top: 0;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.btn-small:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .status-banner {
@@ -208,6 +270,29 @@ button:disabled {
   margin-bottom: 10px;
   font-size: 0.92rem;
   font-weight: 700;
+}
+
+.output-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.output-title-row .output-title {
+  margin-bottom: 0;
+}
+
+.panel-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--interpret-bg);
+  color: var(--interpret-label);
+  border: 1px solid var(--interpret-border);
 }
 
 .meta-text {
@@ -248,6 +333,96 @@ button:disabled {
   line-height: 1.45;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+/* --- Strategy Interpretation Panel --- */
+.interpretation-panel {
+  border: 1px solid var(--interpret-border);
+  border-radius: 12px;
+  background: var(--interpret-bg);
+  padding: 16px;
+  min-height: 72px;
+}
+
+.interpretation-panel.empty-state {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: #fcfcfa;
+  border-color: var(--border);
+}
+
+.interp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.interp-card {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(199,210,254,0.6);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.interp-card-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--interpret-label);
+  margin-bottom: 6px;
+}
+
+.interp-card-value {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* --- Collapsible Code Block --- */
+.code-details {
+  border-radius: 12px;
+}
+
+.code-summary {
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 10px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  color: var(--ink);
+}
+
+.code-summary::-webkit-details-marker {
+  display: none;
+}
+
+.code-summary::before {
+  content: "\25B6";
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.code-details[open] > .code-summary::before {
+  transform: rotate(90deg);
+}
+
+.code-details .code-shell {
+  margin-top: 8px;
+  animation: fadeSlideIn 0.25s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .table-shell,
@@ -307,18 +482,28 @@ button:disabled {
     grid-template-columns: 1fr;
     gap: 6px;
   }
+  .input-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 """
 
 
 APP_JS = """const DEFAULT_CONFIG = window.__BACKTEST_CONFIG__ || {};
 
+/* ---- Cached last result for CSV export ---- */
+let _lastResult = null;
+
 const elements = {
   query: document.getElementById("query"),
   runButton: document.getElementById("runButton"),
+  exportCsvButton: document.getElementById("exportCsvButton"),
+  exportTradesCsvButton: document.getElementById("exportTradesCsvButton"),
   statusBanner: document.getElementById("statusBanner"),
   resultMeta: document.getElementById("resultMeta"),
   summaryCards: document.getElementById("summaryCards"),
+  strategyInterpretation: document.getElementById("strategyInterpretation"),
   tradesTable: document.getElementById("tradesTable"),
   figureContainer: document.getElementById("figureContainer"),
   codeBlock: document.getElementById("codeBlock"),
@@ -352,6 +537,56 @@ function normalizeResult(payload) {
   return payload;
 }
 
+/* ---- Strategy Interpretation (AI Explainability) ---- */
+
+const INTERP_LABELS = {
+  ticker: "Ticker",
+  start_date: "Start Date",
+  end_date: "End Date",
+  strategy_task: "Strategy Logic",
+  risk_task: "Risk Management",
+  trade_task: "Trade Management",
+};
+
+function renderStrategyInterpretation(result) {
+  const spec = result?.decomposition_spec || null;
+  const el = elements.strategyInterpretation;
+
+  if (!spec || typeof spec !== "object" || !Object.keys(spec).length) {
+    el.className = "interpretation-panel empty-state";
+    el.textContent = "No interpretation yet.";
+    return;
+  }
+
+  el.className = "interpretation-panel";
+  const grid = document.createElement("div");
+  grid.className = "interp-grid";
+
+  const orderedKeys = ["ticker", "start_date", "end_date", "strategy_task", "risk_task", "trade_task"];
+  const allKeys = [...orderedKeys.filter(k => k in spec), ...Object.keys(spec).filter(k => !orderedKeys.includes(k))];
+
+  allKeys.forEach(key => {
+    const card = document.createElement("div");
+    card.className = "interp-card";
+
+    const label = document.createElement("div");
+    label.className = "interp-card-label";
+    label.textContent = INTERP_LABELS[key] || key.replaceAll("_", " ");
+
+    const value = document.createElement("div");
+    value.className = "interp-card-value";
+    const raw = spec[key];
+    value.textContent = typeof raw === "object" ? JSON.stringify(raw, null, 2) : String(raw ?? "");
+
+    card.append(label, value);
+    grid.appendChild(card);
+  });
+
+  el.replaceChildren(grid);
+}
+
+/* ---- Summary Cards ---- */
+
 function renderSummaryCards(result) {
   const summary = result?.stats_summary || result?.stats || {};
   const entries = Object.entries(summary || {}).filter(([key, value]) => key !== "_trades" && (typeof value !== "object" || value === null));
@@ -382,13 +617,18 @@ function renderSummaryCards(result) {
   );
 }
 
+/* ---- Trades Table ---- */
+
 function renderTradesTable(result) {
   const trades = result?.trades || result?.stats?._trades || [];
   if (!Array.isArray(trades) || !trades.length) {
     elements.tradesTable.className = "table-shell empty-state";
     elements.tradesTable.textContent = "No trades.";
+    elements.exportTradesCsvButton.disabled = true;
     return;
   }
+
+  elements.exportTradesCsvButton.disabled = false;
 
   const columns = Array.from(
     trades.reduce((set, row) => {
@@ -425,6 +665,8 @@ function renderTradesTable(result) {
   elements.tradesTable.replaceChildren(table);
 }
 
+/* ---- Chart ---- */
+
 function renderFigure(result) {
   const figureHtml = result?.figure_html || result?.fig_html || "";
   const figureUrl = result?.figure_url || result?.fig_url || "";
@@ -447,8 +689,94 @@ function renderFigure(result) {
   elements.figureContainer.textContent = "No chart.";
 }
 
+/* ---- CSV Export / Download ---- */
+
+function escapeCsvCell(value) {
+  const str = value == null ? "" : String(value);
+  if (str.includes(",") || str.includes('"') || str.includes("\\n")) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function arrayToCsv(headers, rows) {
+  const lines = [headers.map(escapeCsvCell).join(",")];
+  rows.forEach(row => {
+    lines.push(headers.map(h => escapeCsvCell(row[h])).join(","));
+  });
+  return lines.join("\\n");
+}
+
+function downloadCsv(csvContent, filename) {
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportTradesCsv() {
+  if (!_lastResult) return;
+  const trades = _lastResult.trades || _lastResult.stats?._trades || [];
+  if (!Array.isArray(trades) || !trades.length) return;
+
+  const columns = Array.from(
+    trades.reduce((set, row) => { Object.keys(row || {}).forEach(k => set.add(k)); return set; }, new Set())
+  );
+  const csv = arrayToCsv(columns, trades);
+  downloadCsv(csv, "backtest_trades.csv");
+}
+
+function exportFullCsv() {
+  if (!_lastResult) return;
+  const parts = [];
+
+  // Section 1: Summary stats
+  const summary = _lastResult.stats_summary || _lastResult.stats || {};
+  const summaryEntries = Object.entries(summary).filter(([k, v]) => k !== "_trades" && (typeof v !== "object" || v === null));
+  if (summaryEntries.length) {
+    parts.push("--- Summary ---");
+    parts.push("Metric,Value");
+    summaryEntries.forEach(([k, v]) => parts.push(`${escapeCsvCell(k)},${escapeCsvCell(v)}`));
+    parts.push("");
+  }
+
+  // Section 2: Decomposition spec
+  const spec = _lastResult.decomposition_spec;
+  if (spec && typeof spec === "object") {
+    parts.push("--- Strategy Interpretation ---");
+    parts.push("Field,Value");
+    Object.entries(spec).forEach(([k, v]) => {
+      const valStr = typeof v === "object" ? JSON.stringify(v) : String(v ?? "");
+      parts.push(`${escapeCsvCell(k)},${escapeCsvCell(valStr)}`);
+    });
+    parts.push("");
+  }
+
+  // Section 3: Trades
+  const trades = _lastResult.trades || _lastResult.stats?._trades || [];
+  if (Array.isArray(trades) && trades.length) {
+    const columns = Array.from(
+      trades.reduce((set, row) => { Object.keys(row || {}).forEach(k => set.add(k)); return set; }, new Set())
+    );
+    parts.push("--- Trades ---");
+    parts.push(arrayToCsv(columns, trades));
+  }
+
+  downloadCsv(parts.join("\\n"), "backtest_report.csv");
+}
+
+/* ---- Render orchestrator ---- */
+
 function renderResult(result) {
+  _lastResult = result || null;
+
   renderSummaryCards(result || {});
+  renderStrategyInterpretation(result || {});
   renderTradesTable(result || {});
   renderFigure(result || {});
   setTextCodeBlock(elements.codeBlock, result?.final_code || "", "No code.");
@@ -457,7 +785,12 @@ function renderResult(result) {
   const status = result?.status || "unknown";
   const attempts = result?.attempts_taken ? `attempts ${result.attempts_taken}` : "attempts n/a";
   elements.resultMeta.textContent = `${status} | ${attempts}`;
+
+  // Enable / disable the main Export CSV button
+  elements.exportCsvButton.disabled = !result;
 }
+
+/* ---- Run ---- */
 
 async function runBacktest() {
   const query = elements.query.value.trim();
@@ -498,9 +831,13 @@ async function runBacktest() {
   }
 }
 
+/* ---- Bootstrap ---- */
+
 function bootstrap() {
   elements.query.value = DEFAULT_CONFIG.exampleQuery || "";
   elements.runButton.addEventListener("click", runBacktest);
+  elements.exportCsvButton.addEventListener("click", exportFullCsv);
+  elements.exportTradesCsvButton.addEventListener("click", exportTradesCsv);
 }
 
 bootstrap();

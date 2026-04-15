@@ -192,4 +192,9 @@ def run_crew(nlp_query: str):
     end_date = raw_output.get("end_date", None)
 
     result = checker(assembly_task.output.raw, ticker, start_date, end_date)
+
+    # Attach the decomposer's intermediate JSON spec for the
+    # "Strategy Interpretation" explainability panel in the dashboard.
+    result["decomposition_spec"] = raw_output
+
     return result

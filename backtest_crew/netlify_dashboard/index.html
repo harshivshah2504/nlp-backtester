@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Backtest Crew</title>
+    <meta name="description" content="AI-powered backtesting strategy generator. Describe a trading strategy in plain English and get executable backtest code with results." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,7 +21,10 @@
           rows="8"
           placeholder="Enter your trading strategy idea..."
         ></textarea>
-        <button id="runButton" type="button">Run</button>
+        <div class="input-actions">
+          <button id="runButton" type="button">Run</button>
+          <button id="exportCsvButton" type="button" class="btn-secondary" disabled>&#x2913; Export CSV</button>
+        </div>
         <div id="statusBanner" class="status-banner">Ready.</div>
       </section>
 
@@ -32,7 +36,18 @@
         </div>
 
         <div class="output-box">
-          <div class="output-title">Trades</div>
+          <div class="output-title-row">
+            <div class="output-title">Strategy Interpretation</div>
+            <span class="panel-badge">AI Explainability</span>
+          </div>
+          <div id="strategyInterpretation" class="interpretation-panel empty-state">No interpretation yet.</div>
+        </div>
+
+        <div class="output-box">
+          <div class="output-title-row">
+            <div class="output-title">Trades</div>
+            <button id="exportTradesCsvButton" type="button" class="btn-small" disabled>&#x2913; CSV</button>
+          </div>
           <div id="tradesTable" class="table-shell empty-state">No trades.</div>
         </div>
 
@@ -42,8 +57,10 @@
         </div>
 
         <div class="output-box">
-          <div class="output-title">Code</div>
-          <pre id="codeBlock" class="code-shell empty-state"><code>No code.</code></pre>
+          <details id="codeDetails" class="code-details">
+            <summary class="code-summary">View Code</summary>
+            <pre id="codeBlock" class="code-shell empty-state"><code>No code.</code></pre>
+          </details>
         </div>
 
         <div class="output-box">
