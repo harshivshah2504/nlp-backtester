@@ -1,11 +1,14 @@
 [build]
+  # The dashboard is pre-built static HTML/CSS/JS committed to the repo.
+  # No build step is needed; just publish the directory as-is.
   command = "echo 'Static site — no build needed'"
   publish = "backtest_crew/netlify_dashboard"
 
 [build.environment]
-  # Prevent Netlify from auto-installing Python deps from requirements.txt.
-  # The dashboard is pre-built static HTML/CSS/JS; Python is only used locally.
+  # Pin Python version and suppress pip install triggered by
+  # the root-level requirements.txt (which is only for the local backend).
   PYTHON_VERSION = "3.12"
+  PIP_NO_DEPS = "true"
 
 [[redirects]]
   from = "/*"
