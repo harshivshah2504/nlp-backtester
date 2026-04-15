@@ -190,7 +190,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--port",
         type=int,
-        default=int(os.getenv("BACKTEST_CREW_PORT", str(DEFAULT_PORT))),
+        default=int(os.getenv("PORT", os.getenv("BACKTEST_CREW_PORT", str(DEFAULT_PORT)))),
     )
     return parser.parse_args()
 

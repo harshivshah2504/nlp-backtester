@@ -21,8 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of your app
 COPY . .
 
-# Expose Streamlit's default port
-EXPOSE 8501
+# Expose default port (Render overrides via $PORT env var)
+EXPOSE 8000
 
-# Start Streamlit
-CMD ["streamlit", "run", "crew/dashboard.py", "--server.address=0.0.0.0", "--server.port=8501"]
+# Start the Backtest Crew local API server (serves dashboard + API).
+# Uses shell form so $PORT is expanded at runtime (Render sets it dynamically).
+CMD python backtest_crew/local_api.py --host 0.0.0.0 --port ${PORT:-8000}

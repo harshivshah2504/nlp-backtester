@@ -1,0 +1,7 @@
+[build]
+  publish = "netlify_dashboard"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
