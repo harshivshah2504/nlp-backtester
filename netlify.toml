@@ -1,5 +1,11 @@
 [build]
+  command = "echo 'Static site — no build needed'"
   publish = "backtest_crew/netlify_dashboard"
+
+[build.environment]
+  # Prevent Netlify from auto-installing Python deps from requirements.txt.
+  # The dashboard is pre-built static HTML/CSS/JS; Python is only used locally.
+  PYTHON_VERSION = "3.12"
 
 [[redirects]]
   from = "/*"
