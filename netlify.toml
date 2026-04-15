@@ -1,5 +1,10 @@
 [build]
+  command = "python backtest_crew/dashboard.py"
   publish = "backtest_crew/netlify_dashboard"
+
+[build.environment]
+  PYTHON_VERSION = "3.12"
+  NETLIFY_BACKTEST_API_BASE_URL = "https://nlp-backtester.onrender.com"
 
 [[redirects]]
   from = "/*"
