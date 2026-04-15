@@ -1,5 +1,5 @@
 [build]
-  command = "python backtest_crew/dashboard.py"
+  command = "pip install uv && uv pip install -r requirements.txt --system && python backtest_crew/dashboard.py"
   publish = "backtest_crew/netlify_dashboard"
 
 [build.environment]
