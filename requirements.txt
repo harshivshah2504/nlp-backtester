@@ -20,7 +20,6 @@ seaborn
 backtesting
 bokeh
 matplotlib
-ta
 pandas-ta-classic
 ipython
 
